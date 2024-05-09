@@ -66,12 +66,13 @@ mvn install
 The utility is launched from the command line:
 
 ```Shell
-java -cp <path_to_utility_jar>/wildfly-configuration-1.0.jar:<path_to_jdbc_jar>/mysql-connector-j-8.3.0.jar io.github.robert_f_ruff.wildfly_configuration.Main \
+java -cp <path_to_utility_jar>/wildfly-configuration-1.0.jar:<path_to_jdbc_jar>/mysql-connector-j-8.3.0.jar \
+    io.github.robert_f_ruff.wildfly_configuration.Main \
     <template_file> <config_file> <secrets_path>
 ```
 
 where:
-- `<path_to_utility_jar>` is the absolute path where the utility's JAR file
+- `<path_to_utility_jar>` is the absolute path to the utility's JAR file
 - `<path_to_jdbc_jar` is the absolute path to the data source's JDBC JAR file
 - `<template_file>` is the absolute path and filename of the YAML configuration template file
 - `<config_file>` is the absolute path and filename of the YAML configuration file to generate
