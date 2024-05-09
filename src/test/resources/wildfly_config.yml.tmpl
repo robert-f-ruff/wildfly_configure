@@ -1,0 +1,39 @@
+wildfly-configuration:
+  system-property:
+    rules_engine_SendEmail_from_address:
+      value: ${mail_from_address}
+    rules_engine_Reload_Rules_Key:
+      value: ${engine_reload_key}
+  subsystem:
+    datasources:
+      data-source:
+        Rules:
+          jndi-name: Rules
+          driver-name: mysql
+          connection-url: jdbc:mysql://${db_host}:${db_host_port}/rules
+          user-name: ${db_user_name}
+          password: ${db_user_password}
+          validate-on-match: true
+    logging:
+      console-handler:
+        CONSOLE:
+          level: DEBUG
+      logger:
+        io.github.robert_f_ruff.rules_engine:
+          level: DEBUG
+    mail:
+      mail-session:
+        Rules Mail:
+          debug: true
+          jndi-name: java:jboss/mail/RulesMail
+          server:
+            smtp:
+              outbound-socket-binding-ref: rules-mail-smtp
+              username: ${mail_from_address}
+              password: ${mail_server_password}
+  socket-binding-group:
+    standard-sockets:
+      remote-destination-outbound-socket-binding:
+        rules-mail-smtp:
+          host: ${mail_host}
+          port: ${mail_host_port}
