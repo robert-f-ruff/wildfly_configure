@@ -43,10 +43,22 @@ public class WildFlyWait {
     System.out.println("Verifying connection to database:");
     Connection connection = null;
     boolean printedDots = false;
+    int timesVerified = 0;
     do {
       try {
         connection = DriverManager.getConnection("jdbc:mysql://" + serverAddress + ":" + serverPort
             + "/rules", userName, userPassword);
+        timesVerified += 1;
+        try {
+          connection.close();
+        } catch (SQLException error) {
+          // Don't care
+        }
+        try {
+          TimeUnit.SECONDS.sleep(4);
+        } catch (InterruptedException errorInterrupt) {
+          // Don't care
+        }
       } catch (SQLException error) {
         System.out.print(".");
         System.out.flush();
@@ -57,13 +69,8 @@ public class WildFlyWait {
           // Don't care
         }
       }
-    } while (connection == null);
+    } while (timesVerified < 2);
     System.out.println(printedDots ? "\nConnection verified!" : "Connection verified!");
-    try {
-      connection.close();
-    } catch (SQLException error) {
-      // Don't care
-    }
   }
 
   /**

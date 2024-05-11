@@ -11,10 +11,14 @@ import org.mockito.stubbing.Answer;
 public class ConnectionMock implements Answer<Connection> {
   private int calledCounter;
 
+  public boolean getServerReset() {
+    return calledCounter >= 3;
+  }
+
   @Override
   public Connection answer(InvocationOnMock invocation) throws Throwable {
     calledCounter++;
-    if (calledCounter < 3) {
+    if (calledCounter < 3 || (calledCounter == 4)) {
       throw new SQLException();
     } else {
       return mock(Connection.class);

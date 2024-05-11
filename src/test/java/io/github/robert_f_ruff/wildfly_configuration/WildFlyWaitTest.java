@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
 
 import io.github.robert_f_ruff.wildfly_configuration.WildFlyWait.WaitException;
 
@@ -68,7 +69,7 @@ public class WildFlyWaitTest {
           outContent.toString());
       ArgumentCaptor<String> serverAddressCaptor = ArgumentCaptor.forClass(String.class);
       mocked.verify(() -> DriverManager.getConnection(serverAddressCaptor.capture(), anyString(),
-          anyString()));
+          anyString()), times(2));
       assertEquals("jdbc:mysql://" + serverAddress + ":" + serverPort + "/rules",
           serverAddressCaptor.getValue());
     }
@@ -116,14 +117,14 @@ public class WildFlyWaitTest {
           outContent.toString());
       ArgumentCaptor<String> serverAddressCaptor = ArgumentCaptor.forClass(String.class);
       mocked.verify(() -> 
-          DriverManager.getConnection(serverAddressCaptor.capture(), anyString(),anyString()));
+          DriverManager.getConnection(serverAddressCaptor.capture(), anyString(),anyString()), times(2));
       assertEquals("jdbc:mysql://" + serverAddress + ":" + serverPort + "/rules",
           serverAddressCaptor.getValue());
     }
   }
 
   @Test
-  void testInterruptedException() throws InterruptedException {
+  void testFirstInterruptedException() throws InterruptedException {
     AtomicBoolean successfulResult = new AtomicBoolean();
     Runnable toBeInterrupted = () -> {
       try (MockedStatic<DriverManager> mocked = mockStatic(DriverManager.class)) {
@@ -147,6 +148,40 @@ public class WildFlyWaitTest {
     testThread.start();
     while (true) {
       if (testThread.getState() == Thread.State.TIMED_WAITING) {
+        testThread.interrupt();
+        break;
+      }
+    }
+    testThread.join();
+    assertTrue(successfulResult.get());
+  }
+
+  @Test
+  void testSecondInterruptedException() throws InterruptedException {
+    AtomicBoolean successfulResult = new AtomicBoolean();
+    ConnectionMock mocker = new ConnectionMock();
+    Runnable toBeInterrupted = () -> {
+      try (MockedStatic<DriverManager> mocked = mockStatic(DriverManager.class)) {
+        mocked.when(() ->
+              DriverManager.getConnection(anyString(), anyString(), anyString())
+            ).thenAnswer(mocker);
+  
+        WildFlyWait tested = new WildFlyWait(new DriverFactory());
+        tested.waitForServer("127.0.0.1", "3306", "rules", "password");
+  
+        String[] output = outContent.toString().split("\n");
+        if (output[0].equals("Verifying connection to database:") && output[1].contains(".") && output[2].equals("Connection verified!")) {
+          successfulResult.set(true);
+        }
+      } catch (WaitException error) {
+        error.printStackTrace();
+        successfulResult.set(false);
+      }
+    };
+    Thread testThread = new Thread(toBeInterrupted);
+    testThread.start();
+    while (true) {
+      if (testThread.getState() == Thread.State.TIMED_WAITING && mocker.getServerReset()) {
         testThread.interrupt();
         break;
       }
