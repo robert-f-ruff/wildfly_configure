@@ -53,7 +53,7 @@ The utility uses the data source connection information it obtained from the Doc
 ## Prerequisites
 Install the following tools:
 - [Java Development Kit (JDK) 21](https://www.oracle.com/java/technologies/downloads/)
-- [Apache Maven v3.9.6](https://maven.apache.org/download.cgi)
+- [Apache Maven v3.9.9](https://maven.apache.org/download.cgi)
 
 ## Build and Distribute the Utility
 The utility is packaged as an executable JAR file and distributed via the local Maven repository:
@@ -66,7 +66,7 @@ mvn install
 The utility is launched from the command line:
 
 ```Shell
-java -cp <path_to_utility_jar>/wildfly-configuration-1.0.jar:<path_to_jdbc_jar>/mysql-connector-j-8.3.0.jar \
+java -cp <path_to_utility_jar>/wildfly-configuration-1.0.1.jar:<path_to_jdbc_jar>/mysql-connector-j-9.0.0.jar \
     io.github.robert_f_ruff.wildfly_configuration.Main \
     <template_file> <config_file> <secrets_path>
 ```
